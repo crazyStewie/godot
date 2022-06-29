@@ -475,17 +475,19 @@ void RigidBody::set_mode(Mode p_mode) {
 	switch (p_mode) {
 		case MODE_RIGID: {
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_RIGID);
+			PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 		} break;
 		case MODE_STATIC: {
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_STATIC);
-
+			PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
 		} break;
 		case MODE_CHARACTER: {
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_CHARACTER);
-
+			PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 		} break;
 		case MODE_KINEMATIC: {
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(), PhysicsServer::BODY_MODE_KINEMATIC);
+			PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
 		} break;
 	}
 	update_configuration_warning();

@@ -230,55 +230,55 @@ vec3 apply_tonemapping(vec3 color, float white) {
 	return color; // no other selected -> linear: no color transform applied
 }
 
-vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
-	vec3 glow = vec3(0.0f);
+vec4 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
+	vec4 glow = vec4(0.0f);
 
 #ifdef USE_GLOW_LEVEL1
-	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1).rgb;
+	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 1);
 #endif
 
 #ifdef USE_GLOW_LEVEL2
-	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2).rgb;
+	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 2);
 #endif
 
 #ifdef USE_GLOW_LEVEL3
-	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3).rgb;
+	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 3);
 #endif
 
 #ifdef USE_GLOW_LEVEL4
-	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4).rgb;
+	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 4);
 #endif
 
 #ifdef USE_GLOW_LEVEL5
-	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5).rgb;
+	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 5);
 #endif
 
 #ifdef USE_GLOW_LEVEL6
-	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6).rgb;
+	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 6);
 #endif
 
 #ifdef USE_GLOW_LEVEL7
-	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 7).rgb;
+	glow += GLOW_TEXTURE_SAMPLE(tex, uv, 7);
 #endif
 
 	return glow;
 }
 
-vec4 apply_glow(vec4 color, vec3 glow) { // apply glow using the selected blending mode
+vec4 apply_glow(vec4 color, vec4 glow) { // apply glow using the selected blending mode
 #ifdef USE_GLOW_REPLACE
-	color.rgb = glow;
+	color.rgb = glow.rgb;
 #endif
 
 #ifdef USE_GLOW_SCREEN
 	//need color clamping
 	color.rgb = clamp(color.rgb, vec3(0.0f), vec3(1.0f));
-	color.rgb = max((color.rgb + glow) - (color.rgb * glow), vec3(0.0));
+	color.rgb = max((color.rgb + glow.rgb) - (color.rgb * glow.rgb), vec3(0.0));
 #endif
 
 #ifdef USE_GLOW_SOFTLIGHT
 	//need color clamping
 	color.rgb = clamp(color.rgb, vec3(0.0f), vec3(1.0));
-	glow = glow * vec3(0.5f) + vec3(0.5f);
+	glow.rgb = glow.rgb * vec3(0.5f) + vec3(0.5f);
 
 	color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
 	color.g = (glow.g <= 0.5f) ? (color.g - (1.0f - 2.0f * glow.g) * color.g * (1.0f - color.g)) : (((glow.g > 0.5f) && (color.g <= 0.25f)) ? (color.g + (2.0f * glow.g - 1.0f) * (4.0f * color.g * (4.0f * color.g + 1.0f) * (color.g - 1.0f) + 7.0f * color.g)) : (color.g + (2.0f * glow.g - 1.0f) * (sqrt(color.g) - color.g)));
@@ -286,18 +286,18 @@ vec4 apply_glow(vec4 color, vec3 glow) { // apply glow using the selected blendi
 #endif
 
 #if !defined(USE_GLOW_SCREEN) && !defined(USE_GLOW_SOFTLIGHT) && !defined(USE_GLOW_REPLACE) // no other selected -> additive
-	color.rgb += glow;
+	color.rgb += glow.rgb;
 #endif
 
 #ifndef USE_GLOW_SOFTLIGHT // softlight has no effect on black color
 	// compute the alpha from glow
-	float a = max(max(glow.r, glow.g), glow.b);
+	float a = max(max(glow.r, glow.g), glow.b)*glow.a;
 	color.a = a + color.a * (1.0 - a);
-	if (color.a == 0.0) {
-		color.rgb = vec3(0.0);
-	} else if (color.a < 1.0) {
-		color.rgb /= color.a;
-	}
+	// if (color.a == 0.0) {
+	// 	color.rgb = vec3(0.0);
+	// } else if (color.a < 1.0) {
+	// 	color.rgb /= color.a;
+	// }
 #endif
 
 	return color;
@@ -487,12 +487,12 @@ void main() {
 	// Glow
 
 #ifdef USING_GLOW
-	vec3 glow = gather_glow(source_glow, uv_interp) * glow_intensity;
+	vec4 glow = gather_glow(source_glow, uv_interp) * glow_intensity;
 
 	// high dynamic range -> SRGB
-	glow = apply_tonemapping(glow, white);
-	glow = clamp(glow, vec3(0.0f), vec3(1.0f));
-	glow = linear_to_srgb(glow);
+	glow.rgb = apply_tonemapping(glow.rgb, white);
+	glow = clamp(glow, vec4(0.0f), vec4(1.0f));
+	glow.rgb = linear_to_srgb(glow.rgb);
 
 	color = apply_glow(color, glow);
 #endif

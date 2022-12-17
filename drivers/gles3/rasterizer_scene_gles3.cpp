@@ -4385,7 +4385,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
 
-				storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
+				// storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
 
 				storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, true);
 
@@ -4395,7 +4395,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 				//turn off everything used
 				storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, false);
-				storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
+				// storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
 
 				//restore
 				glEnable(GL_BLEND);

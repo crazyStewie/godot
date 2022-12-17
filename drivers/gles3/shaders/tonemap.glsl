@@ -291,7 +291,7 @@ vec4 apply_glow(vec4 color, vec4 glow) { // apply glow using the selected blendi
 
 #ifndef USE_GLOW_SOFTLIGHT // softlight has no effect on black color
 	// compute the alpha from glow
-	float a = max(max(glow.r, glow.g), glow.b)*glow.a;
+	float a = max(max(glow.r, glow.g), glow.b) * glow.a;
 	color.a = a + color.a * (1.0 - a);
 	// if (color.a == 0.0) {
 	// 	color.rgb = vec3(0.0);
